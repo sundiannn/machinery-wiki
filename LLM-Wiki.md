@@ -2,8 +2,6 @@
 
 用 LLM 把課堂講義變成一個會持續長大的知識庫，再從知識庫做出教學簡報。
 
-這份文件說明這個專案的做法。它參考 Andrej Karpathy 的〈LLM Wiki〉idea file，套用在《電機機械》這門課上；實際的操作規則寫在 `AGENTS.md`，任何 LLM agent（Claude Code、Codex 等）讀了就能接手。
-
 ## 核心想法
 
 一般用 LLM 讀文件的方式是 RAG：上傳講義，提問時 LLM 去找相關片段再回答。每次提問都從頭找，什麼都沒有累積下來。
