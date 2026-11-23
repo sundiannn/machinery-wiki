@@ -1,6 +1,6 @@
-# 電機機械教學簡報 × LLM Wiki
+# 電機機械教學簡報
 
-以《電機機械》Ch.1～Ch.5 講義為原始資料，用「先討論、後生成」的方式建立 LLM Wiki，再以 wiki 為唯一知識來源，製作給初學者看的教學簡報。
+目前以《電機機械》Ch.1～Ch.5 講義為原始資料，製作給初學者看的教學簡報。
 
 - **教學簡報**：[https://sundiannn.github.io/machinery-wiki/](https://sundiannn.github.io/machinery-wiki/)
 - Wiki 目錄：[wiki/index.md](wiki/index.md)
