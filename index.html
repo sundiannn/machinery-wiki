@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>電機機械教學簡報</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<!--
+  每頁 <section> 的 data-src 記錄這頁依據的 wiki 頁（不顯示在畫面上，供檢查與追溯用）。
+  頁面與 wiki 的完整對照見 slides/outline.md。
+-->
+<style>
+  :root {
+    --paper: #f7f3ec; --ink: #1f2328; --muted: #5d6470; --line: #d9d2c5;
+    --copper: #b4582a; --copper-soft: #f3e2d6; --steel: #24577a; --steel-soft: #dde9f1;
+    --green: #2f7a4d; --green-soft: #def0e4; --card: #ffffff; --iron: #9aa3ab;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #23262b; overflow: hidden;
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif; color: var(--ink); }
+  #stage { position: absolute; width: 1280px; height: 720px; left: 50%; top: 50%; transform-origin: center center; overflow: hidden; background: var(--paper); }
+
+  /* 換頁動畫 */
+  .slide { position: absolute; inset: 0; background: var(--paper); display: flex; flex-direction: column;
+    padding: 76px 72px 40px; opacity: 0; visibility: hidden; transform: translateX(60px);
+    transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1), visibility 0s linear .55s; }
+  .slide.active { opacity: 1; visibility: visible; transform: none; transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1), visibility 0s; }
+  .slide.out-left { transform: translateX(-60px); }
+  .slide.from-left { transform: translateX(-60px); }
+
+  /* 進場動畫：.fx 依序浮現，--d 為延遲 */
+  .fx { opacity: 0; transform: translateY(18px); }
+  .slide.active .fx { animation: rise .6s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: calc(var(--d, 0) * 1s + .15s); }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .grow { transform-origin: bottom; transform: scaleY(0); }
+  .slide.active .grow { animation: grow .9s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: calc(var(--d, 0) * 1s + .3s); }
+  @keyframes grow { to { transform: scaleY(1); } }
+  .growx { transform-origin: left; transform: scaleX(0); transform-box: fill-box; }
+  .slide.active .growx { animation: growx 1s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: calc(var(--d, 0) * 1s + .3s); }
+  @keyframes growx { to { transform: scaleX(1); } }
+  .draw { stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+  .slide.active .draw { animation: draw 1.4s ease forwards; animation-delay: calc(var(--d, 0) * 1s + .2s); }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .flow { stroke-dasharray: 10 8; animation: flow 1s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -18; } }
+  .pulse { animation: pulse 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes pulse { 50% { transform: scale(1.12); opacity: .7; } }
+  .spin { animation: spin 4s linear infinite; transform-box: view-box; }
+  @keyframes spin { to { transform: rotate(-360deg); } }
+
+  .topbar { position: absolute; top: 0; left: 0; right: 0; height: 48px; display: flex; align-items: center;
+    gap: 6px; padding: 0 24px; border-bottom: 1px solid var(--line); background: #fbf8f3; z-index: 5; }
+  .topbar .brand { font-size: 16px; color: var(--muted); margin-right: auto; font-weight: 700; }
+  .chip { font-size: 15px; padding: 4px 12px; border-radius: 999px; color: var(--muted); cursor: pointer; border: 1px solid transparent; user-select: none; transition: background .3s, color .3s; }
+  .chip:hover { border-color: var(--line); }
+  .chip.on { background: var(--copper); color: #fff; }
+  .progress { position: absolute; top: 48px; left: 0; height: 3px; background: var(--copper); transition: width .5s ease; z-index: 6; }
+
+  .kicker { font-size: 20px; color: var(--copper); font-weight: 700; letter-spacing: .04em; margin: 0 0 6px; }
+  h1 { font-size: 60px; margin: 0 0 22px; line-height: 1.2; }
+  h2 { font-size: 42px; margin: 0 0 22px; line-height: 1.2; }
+  p, li { font-size: 26px; line-height: 1.55; }
+  p { margin: 0 0 12px; }
+  ul { margin: 0; padding-left: 1.1em; }
+  li { margin-bottom: 10px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 21px; }
+  .cols { display: flex; gap: 40px; flex: 1; min-height: 0; align-items: center; }
+  .cols > div { flex: 1; min-width: 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; }
+  .tag { display: inline-block; font-size: 18px; padding: 2px 10px; border-radius: 6px; vertical-align: middle; }
+  .t-copper { background: var(--copper-soft); color: var(--copper); }
+  .t-steel { background: var(--steel-soft); color: var(--steel); }
+  .t-green { background: var(--green-soft); color: var(--green); }
+  .callout { border-left: 6px solid var(--copper); background: var(--copper-soft); padding: 14px 20px; border-radius: 0 12px 12px 0; font-size: 24px; margin: 0; }
+  .formula { font-size: 32px; text-align: center; margin: 14px 0; }
+  .step { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+  .step .n { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--steel); color: #fff; font-weight: 700; font-size: 20px; display: flex; align-items: center; justify-content: center; margin-top: 3px; }
+  .step .q { font-weight: 700; font-size: 22px; }
+  .step .a { font-size: 21px; }
+  table.t { border-collapse: collapse; width: 100%; font-size: 23px; background: var(--card); }
+  table.t th, table.t td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+  table.t th { background: #efe8dc; }
+  .grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; }
+  .grid4 .card { display: flex; gap: 14px; align-items: center; padding: 12px 16px; }
+  .grid4 .card svg { flex: none; }
+  .grid4 h3 { margin: 0 0 4px; font-size: 25px; }
+  .grid4 p { font-size: 20px; margin: 0; line-height: 1.45; }
+  .toc { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 14px; }
+  .toc .card { cursor: pointer; transition: transform .2s, border-color .2s; }
+  .toc .card:hover { transform: translateY(-5px); border-color: var(--copper); }
+  .toc .num { font-size: 18px; color: var(--copper); font-weight: 700; }
+  .toc h3 { margin: 4px 0 6px; font-size: 26px; }
+  .toc p { font-size: 19px; margin: 0; color: var(--muted); line-height: 1.4; }
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { font-family: inherit; font-size: 20px; padding: 8px 16px; border-radius: 10px; border: 2px solid var(--line); background: #fff; cursor: pointer; color: var(--ink); transition: all .2s; }
+  .btn:hover { border-color: var(--copper); }
+  .btn.on { background: var(--copper); border-color: var(--copper); color: #fff; }
+  .slider { display: flex; align-items: center; gap: 12px; font-size: 20px; }
+  .slider input { flex: 1; accent-color: var(--copper); height: 28px; }
+  .readout { font-size: 24px; font-weight: 700; min-height: 36px; transition: color .3s; }
+  .quiz { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px 18px; }
+  .quiz .card { padding: 10px 16px; }
+  .quiz .qq { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .opt { display: block; width: 100%; text-align: left; font-size: 19px; padding: 5px 10px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-family: inherit; color: var(--ink); transition: background .25s; }
+  .opt.right { background: var(--green-soft); border-color: var(--green); }
+  .opt.wrong { background: #f8dede; border-color: #b33; animation: shake .35s; }
+  @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+  .why { max-height: 0; overflow: hidden; font-size: 17px; color: var(--muted); transition: max-height .4s ease; }
+  .why.show { max-height: 80px; }
+  svg text { font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; }
+  .nav { position: fixed; bottom: 12px; right: 14px; display: flex; gap: 8px; align-items: center; z-index: 10; }
+  .nav button { width: 46px; height: 46px; border-radius: 50%; border: none; background: rgba(255,255,255,.88); font-size: 22px; cursor: pointer; }
+  .nav .pg { color: #fff; background: rgba(0,0,0,.35); padding: 4px 10px; border-radius: 999px; font-size: 15px; }
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .slide.active { transition: none; }
+    .fx, .grow, .growx, .draw { animation: none !important; opacity: 1 !important; transform: none !important; stroke-dashoffset: 0 !important; }
+    .flow, .pulse, .spin { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+<div class="progress" id="progress"></div>
+
+<!-- 1 開場 -->
+<section class="slide" data-ch="0" data-src="concepts/electric-machines.md">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+    <p class="kicker fx">電機機械入門 · 給完全沒學過的人</p>
+    <h1 class="fx" style="--d:.2">電怎麼變成動？<br>動怎麼變成電？</h1>
+    <div class="cols" style="flex:none;margin-top:6px;">
+      <div class="card fx" style="--d:.5;display:flex;gap:16px;align-items:center;">
+        <svg width="70" height="70" viewBox="0 0 70 70" aria-hidden="true"><g class="spin" style="transform-origin:35px 35px;animation-duration:3s"><path d="M35 35 L35 6 A29 29 0 0 1 60 20 Z M35 35 L60 50 A29 29 0 0 1 35 64 Z M35 35 L10 50 A29 29 0 0 1 10 20 Z" fill="#b4582a"/></g><circle cx="35" cy="35" r="6" fill="#1f2328"/></svg>
+        <div><h3 style="margin:0;font-size:28px;">發電機</h3><span class="tag t-copper">機械 → 電</span></div>
+      </div>
+      <div class="card fx" style="--d:.7;display:flex;gap:16px;align-items:center;">
+        <svg width="70" height="70" viewBox="0 0 70 70" aria-hidden="true"><g class="spin" style="transform-origin:35px 35px;animation-duration:.9s"><ellipse cx="35" cy="17" rx="8" ry="16" fill="#24577a"/><ellipse cx="35" cy="17" rx="8" ry="16" fill="#24577a" transform="rotate(120 35 35)"/><ellipse cx="35" cy="17" rx="8" ry="16" fill="#24577a" transform="rotate(240 35 35)"/></g><circle cx="35" cy="35" r="6" fill="#1f2328"/></svg>
+        <div><h3 style="margin:0;font-size:28px;">電動機</h3><span class="tag t-steel">電 → 機械</span></div>
+      </div>
+      <div class="card fx" style="--d:.9;display:flex;gap:16px;align-items:center;">
+        <svg width="70" height="70" viewBox="0 0 70 70" aria-hidden="true"><rect x="12" y="10" width="46" height="50" rx="4" fill="#9aa3ab"/><rect x="24" y="22" width="22" height="26" fill="#fff"/><g class="pulse"><path d="M6 24h16M6 32h16M6 40h16M6 48h16" stroke="#2f7a4d" stroke-width="4"/></g><path d="M48 30h16M48 40h16" stroke="#2f7a4d" stroke-width="4"/></svg>
+        <div><h3 style="margin:0;font-size:28px;">變壓器</h3><span class="tag t-green">電 → 電</span></div>
+      </div>
+    </div>
+    <p class="muted small fx" style="--d:1.2;margin-top:28px;">三種裝置，背後是同一套磁的原理。按 → 開始。</p>
+  </div>
+</section>
+
+<!-- 2 目錄 -->
+<section class="slide" data-ch="0" data-src="index.md">
+  <p class="kicker fx">地圖</p>
+  <h2 class="fx" style="--d:.1">五章，一條故事線</h2>
+  <p class="fx" style="--d:.2">從「磁能做什麼」出發，最後發現：<b>發電機和電動機是同一台機器</b>。</p>
+  <div class="toc">
+    <div class="card fx" style="--d:.35" data-goto="3"><div class="num">Ch.1</div><h3>磁與力</h3><p>四大原理、鐵心</p></div>
+    <div class="card fx" style="--d:.45" data-goto="7"><div class="num">Ch.2</div><h3>變壓器</h3><p>電 → 電</p></div>
+    <div class="card fx" style="--d:.55" data-goto="10"><div class="num">Ch.3</div><h3>旋轉磁場</h3><p>交流電機的祕密</p></div>
+    <div class="card fx" style="--d:.65" data-goto="13"><div class="num">Ch.4</div><h3>同步發電機</h3><p>動 → 電</p></div>
+    <div class="card fx" style="--d:.75" data-goto="15"><div class="num">Ch.5</div><h3>同步電動機</h3><p>電 → 動</p></div>
+  </div>
+  <p class="muted small fx" style="--d:.9;margin-top:24px;">點章節可直接跳過去；有些頁面可以按按鈕、拉滑桿互動。</p>
+</section>
+
+<!-- 3 四大原理 -->
+<section class="slide" data-ch="1" data-src="concepts/four-magnetic-principles.md,concepts/faraday-law.md,concepts/induced-force.md,concepts/motional-voltage.md">
+  <p class="kicker fx">Ch.1 磁與力</p>
+  <h2 class="fx" style="--d:.1">一切從磁場開始：四大原理</h2>
+  <div class="grid4">
+    <div class="card fx" style="--d:.3">
+      <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="7" fill="#b4582a"/><text x="48" y="53" text-anchor="middle" font-size="12" fill="#fff">●</text>
+        <circle cx="48" cy="48" r="18" fill="none" stroke="#24577a" stroke-width="3"><animate attributeName="r" values="12;44" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1.8s" repeatCount="indefinite"/></circle>
+        <circle cx="48" cy="48" r="18" fill="none" stroke="#24577a" stroke-width="3"><animate attributeName="r" values="12;44" dur="1.8s" begin=".9s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1.8s" begin=".9s" repeatCount="indefinite"/></circle></svg>
+      <div><h3>① 電流 → 磁場</h3><p>通電導線周圍就有磁場</p></div>
+    </div>
+    <div class="card fx" style="--d:.45">
+      <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><path d="M30 20 v56 M42 20 v56 M54 20 v56 M66 20 v56" stroke="#b4582a" stroke-width="4" opacity=".5"/>
+        <g><line x1="10" y1="48" x2="86" y2="48" stroke="#24577a" stroke-width="5"><animate attributeName="stroke-width" values="2;10;2" dur="2s" repeatCount="indefinite"/></line></g>
+        <text x="48" y="94" text-anchor="middle" font-size="12" fill="#24577a">磁通忽大忽小</text></svg>
+      <div><h3>② 磁通變化 → 電壓 <span class="tag t-green">變壓器</span></h3><p>$e = -N\dfrac{d\phi}{dt}$（法拉第定律，N：匝數）</p></div>
+    </div>
+    <div class="card fx" style="--d:.6">
+      <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><g fill="#24577a" font-size="14"><text x="14" y="24">×</text><text x="70" y="24">×</text><text x="14" y="84">×</text><text x="70" y="84">×</text></g>
+        <g><rect x="44" y="14" width="8" height="68" fill="#b4582a"><animate attributeName="x" values="30;56" dur="2s" repeatCount="indefinite"/></rect></g>
+        <path d="M60 48 h22" stroke="#2f7a4d" stroke-width="4"><animate attributeName="opacity" values=".3;1;.3" dur="2s" repeatCount="indefinite"/></path><polygon points="86,48 78,43 78,53" fill="#2f7a4d"/></svg>
+      <div><h3>③ 電流受力 <span class="tag t-steel">電動機</span></h3><p>磁場中的通電導線會被推動</p></div>
+    </div>
+    <div class="card fx" style="--d:.75">
+      <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><g fill="#24577a" font-size="14"><text x="14" y="24">×</text><text x="70" y="24">×</text><text x="14" y="84">×</text><text x="70" y="84">×</text></g>
+        <rect x="44" y="14" width="8" height="68" fill="#9aa3ab"><animate attributeName="x" values="24;64;24" dur="2.4s" repeatCount="indefinite"/></rect>
+        <text x="48" y="54" text-anchor="middle" font-size="18" font-weight="700" fill="#b4582a">+V<animate attributeName="opacity" values="1;.2;1;.2;1" dur="2.4s" repeatCount="indefinite"/></text></svg>
+      <div><h3>④ 導線運動 → 電壓 <span class="tag t-copper">發電機</span></h3><p>磁場中移動的導線兩端有電壓</p></div>
+    </div>
+  </div>
+  <p class="callout fx" style="--d:1;margin-top:14px;font-size:22px;">重點：線圈不動時，要<b>穿過線圈的磁通在變化</b>才有電壓；磁通再大、不變就沒有。</p>
+</section>
+
+<!-- 4 鐵心與磁路 -->
+<section class="slide" data-ch="1" data-src="concepts/magnetic-field-and-permeability.md,concepts/magnetic-circuit.md">
+  <p class="kicker fx">Ch.1 磁與力</p>
+  <h2 class="fx" style="--d:.1">為什麼電機都用鐵心？</h2>
+  <div class="cols">
+    <div>
+      <p class="fx" style="--d:.3">同樣的電流，鋼裡的磁通是空氣的 <b style="color:var(--copper);font-size:34px;">2000～6000 倍</b></p>
+      <p class="small fx" style="--d:.4">導磁係數 $\mu$：材料「多容易被磁化」。</p>
+      <p class="fx" style="--d:.5">磁通乖乖沿著鐵心走，可以像電路一樣算——<b>磁路</b>：</p>
+      <table class="t fx" style="--d:.7;font-size:22px;">
+        <tr><th>電路</th><th>磁路</th></tr>
+        <tr><td>電壓 推動 電流</td><td>磁動勢 $Ni$（匝數 × 電流）推動 磁通 $\phi$</td></tr>
+        <tr><td>電阻 $R$</td><td>磁阻 $\mathfrak{R} = \dfrac{l}{\mu A}$（長度 ÷（導磁係數 × 面積））</td></tr>
+      </table>
+    </div>
+    <div style="flex:.8;display:flex;justify-content:center;">
+      <svg class="fx" style="--d:.4" viewBox="0 0 400 340" width="400" height="340" aria-label="鐵心中的磁通流動">
+        <rect x="60" y="40" width="280" height="260" rx="8" fill="#9aa3ab"/>
+        <rect x="120" y="100" width="160" height="140" fill="#f7f3ec"/>
+        <rect x="333" y="155" width="14" height="30" fill="#f7f3ec"/>
+        <g stroke="#b4582a" stroke-width="7"><path d="M48 120 h84"/><path d="M48 145 h84"/><path d="M48 170 h84"/><path d="M48 195 h84"/><path d="M48 220 h84"/></g>
+        <path class="flow" d="M200 70 H310 V270 H90 V70 Z" fill="none" stroke="#24577a" stroke-width="4"/>
+        <text x="200" y="28" text-anchor="middle" font-size="20" fill="#24577a">磁通沿鐵心繞圈</text>
+        <text x="352" y="140" font-size="17">氣隙</text><text x="352" y="200" font-size="14" fill="#5d6470">一小段空氣</text>
+        <text x="200" y="330" text-anchor="middle" font-size="18" fill="#b4582a">橘色：線圈 N 匝</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- 5 例題 1-2 -->
+<section class="slide" data-ch="1" data-src="examples/ch01-air-gap.md,concepts/magnetic-field-and-permeability.md,concepts/beginner-glossary.md">
+  <p class="kicker fx">Ch.1 例題引導（例 1-2）</p>
+  <h2 class="fx" style="--d:.1;margin-bottom:12px;">一小段空氣有多麻煩？</h2>
+  <p class="small muted fx" style="--d:.2;font-size:19px;">鐵心 40 cm、氣隙 0.05 cm；截面 12 cm²（氣隙算 12.6 cm²）；$\mu_r = 4000$；400 匝。空氣的導磁係數 $\mu_0 = 4\pi\times10^{-7}$ H/m，鐵 $= \mu_r\mu_0$。</p>
+  <div class="cols" style="align-items:flex-start;">
+    <div style="flex:1.2;">
+      <div class="step fx" style="--d:.4"><div class="n">1</div><div><div class="q">鐵心＋氣隙是什麼接法？</div><div class="a">串聯，磁阻直接相加</div></div></div>
+      <div class="step fx" style="--d:.7"><div class="n">2</div><div><div class="q">鐵心磁阻</div><div class="a">$\frac{0.4}{(4000)(4\pi\times10^{-7})(0.0012)} \approx 66{,}300$</div></div></div>
+      <div class="step fx" style="--d:1"><div class="n">3</div><div><div class="q">氣隙磁阻（空氣 $\mu_r = 1$）</div><div class="a">$\frac{0.0005}{(4\pi\times10^{-7})(0.00126)} \approx 316{,}000$</div></div></div>
+      <div class="step fx" style="--d:1.3"><div class="n">4</div><div><div class="q">氣隙要 0.5 T，電流多少？</div><div class="a">總磁阻 382,300；$Ni = \phi\,\mathfrak{R}$，$\phi = BA$ → $i \approx 0.602$ A</div></div></div>
+    </div>
+    <div style="flex:.8;">
+      <svg viewBox="0 0 400 210" width="400" height="210" aria-label="鐵心與氣隙磁阻比較動畫">
+        <text x="0" y="24" font-size="19">長度</text>
+        <rect class="growx" style="--d:.5" x="70" y="8" width="300" height="24" fill="#9aa3ab"/><text x="76" y="26" font-size="16" fill="#fff">鐵心 40 cm</text>
+        <rect x="70" y="40" width="3" height="24" fill="#b4582a"/><text x="80" y="58" font-size="16" fill="#b4582a">氣隙 0.05 cm（1/800）</text>
+        <text x="0" y="124" font-size="19">磁阻</text>
+        <rect class="growx" style="--d:1" x="70" y="106" width="63" height="32" fill="#9aa3ab"/><text x="76" y="128" font-size="16" fill="#fff">鐵心</text>
+        <rect class="growx" style="--d:1.3" x="70" y="148" width="300" height="32" fill="#b4582a"/><text x="76" y="170" font-size="16" fill="#fff">氣隙 ≈ 鐵心 4.8 倍</text>
+      </svg>
+      <p class="callout fx" style="--d:1.7;font-size:22px;">氣隙只有 1/800 長，磁阻卻近 5 倍 → 轉子（會轉）與定子（不動）之間的氣隙越小越好。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 6 線性直流機 -->
+<section class="slide" data-ch="1" data-src="concepts/linear-dc-machine.md,examples/ch01-linear-machine.md" data-anim="linear">
+  <p class="kicker fx">Ch.1 第一台電機</p>
+  <h2 class="fx" style="--d:.1">同一根棒子：拉它是馬達，推它是發電機</h2>
+  <div class="cols">
+    <div style="flex:1.1;">
+      <svg class="fx" style="--d:.3" viewBox="0 0 560 300" width="560" height="300" aria-label="線性直流機互動動畫">
+        <rect x="20" y="30" width="520" height="230" fill="#dde9f1" rx="8"/>
+        <g fill="#24577a" font-size="18" opacity=".7"><text x="150" y="70">×</text><text x="260" y="70">×</text><text x="370" y="70">×</text><text x="480" y="70">×</text><text x="150" y="235">×</text><text x="260" y="235">×</text><text x="370" y="235">×</text><text x="480" y="235">×</text></g>
+        <line x1="60" y1="100" x2="530" y2="100" stroke="#1f2328" stroke-width="5"/>
+        <line x1="60" y1="200" x2="530" y2="200" stroke="#1f2328" stroke-width="5"/>
+        <line x1="60" y1="100" x2="60" y2="134" stroke="#1f2328" stroke-width="3"/><line x1="44" y1="134" x2="76" y2="134" stroke="#1f2328" stroke-width="4"/><line x1="51" y1="146" x2="69" y2="146" stroke="#1f2328" stroke-width="4"/><line x1="60" y1="146" x2="60" y2="200" stroke="#1f2328" stroke-width="3"/>
+        <text x="82" y="152" font-size="18">電池</text>
+        <g id="lin-bar"><rect x="-7" y="92" width="14" height="116" fill="#b4582a"/>
+          <g id="lin-force"><line x1="0" y1="150" x2="0" y2="150" stroke="#2f7a4d" stroke-width="6"/><polygon points="0,150 0,150 0,150" fill="#2f7a4d"/></g></g>
+        <text x="300" y="285" font-size="17" fill="#24577a" text-anchor="middle">磁場指入紙面（×）</text>
+      </svg>
+    </div>
+    <div style="flex:.9;">
+      <div class="btns fx" style="--d:.5">
+        <button class="btn on" data-mode="0">無載</button>
+        <button class="btn" data-mode="1">往後拉 30 N</button>
+        <button class="btn" data-mode="2">往前推 30 N</button>
+      </div>
+      <div class="card fx" style="--d:.7;margin-top:16px;">
+        <div class="readout" id="lin-speed">速度 120 m/s</div>
+        <div class="readout" id="lin-role" style="color:var(--muted)">電流 0，不轉換能量</div>
+      </div>
+      <p class="small fx" style="--d:.9;margin-top:14px;">棒子跑越快，自己產生的電壓越大、抵消電池，電流就越小 → 最後維持一個穩定速度。啟動瞬間電流 400 A，比運轉時大很多。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7 為什麼需要變壓器 -->
+<section class="slide" data-ch="2" data-src="concepts/transformer.md,examples/ch02-transmission.md">
+  <p class="kicker fx">Ch.2 變壓器</p>
+  <h2 class="fx" style="--d:.1">為什麼需要變壓器？</h2>
+  <svg class="fx" style="--d:.2" viewBox="0 0 1136 120" width="1136" height="120" aria-label="電力從發電廠到家庭的電壓變化">
+    <g font-size="20" text-anchor="middle">
+      <rect x="0" y="16" width="190" height="70" rx="10" fill="#f3e2d6"/><text x="95" y="46">發電廠</text><text x="95" y="72" fill="#b4582a">12～25 kV</text>
+      <rect x="315" y="16" width="250" height="70" rx="10" fill="#dde9f1"/><text x="440" y="46">升壓・長距離輸電</text><text x="440" y="72" fill="#24577a">110 kV～近 1000 kV</text>
+      <rect x="690" y="16" width="190" height="70" rx="10" fill="#dde9f1"/><text x="785" y="46">降壓・配電</text><text x="785" y="72" fill="#24577a">12～34.5 kV</text>
+      <rect x="1000" y="16" width="136" height="70" rx="10" fill="#def0e4"/><text x="1068" y="46">家庭</text><text x="1068" y="72" fill="#2f7a4d">低至 120 V</text>
+    </g>
+    <g stroke="#b4582a" stroke-width="5" class="flow"><line x1="195" y1="51" x2="308" y2="51"/><line x1="570" y1="51" x2="683" y2="51"/><line x1="885" y1="51" x2="993" y2="51"/></g>
+    <g font-size="16" fill="#5d6470" text-anchor="middle"><text x="251" y="110">變壓器</text><text x="626" y="110">變壓器</text><text x="939" y="110">變壓器</text></g>
+  </svg>
+  <div class="cols" style="margin-top:10px;">
+    <div>
+      <p class="fx" style="--d:.5">變壓器換電壓、<b>頻率不變</b>。</p>
+      <p class="fx" style="--d:.7">電壓升高 → 電流變小 → 電線浪費的能量變少。</p>
+    </div>
+    <div>
+      <p class="small muted fx" style="--d:.8;margin-bottom:4px;">例 2-1：同一段輸電線的損失</p>
+      <svg viewBox="0 0 500 150" width="500" height="150" aria-label="有無變壓器的線路損失比較">
+        <text x="0" y="42" font-size="20">沒有變壓器</text>
+        <rect class="growx" style="--d:1" x="130" y="18" width="360" height="36" fill="#b4582a"/><text x="140" y="43" font-size="20" fill="#fff" font-weight="700">1484 W</text>
+        <text x="0" y="112" font-size="20">有變壓器</text>
+        <rect class="growx" style="--d:1.4" x="130" y="88" width="5" height="36" fill="#2f7a4d"/><text x="144" y="113" font-size="20" fill="#2f7a4d" font-weight="700">16.7 W（約 1/89）</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- 8 理想變壓器 -->
+<section class="slide" data-ch="2" data-src="concepts/ideal-transformer.md,concepts/faraday-law.md,concepts/beginner-glossary.md" data-anim="xfmr">
+  <p class="kicker fx">Ch.2 變壓器</p>
+  <h2 class="fx" style="--d:.1">理想變壓器：電壓變了，功率沒變</h2>
+  <div class="cols">
+    <div style="flex:1;">
+      <svg class="fx" style="--d:.3" viewBox="0 0 560 300" width="560" height="300" aria-label="變壓器一次與二次電壓波形動畫">
+        <rect x="170" y="40" width="220" height="210" rx="8" fill="#9aa3ab"/>
+        <rect x="215" y="85" width="130" height="120" fill="#f7f3ec"/>
+        <path class="flow" d="M280 62 H368 V228 H192 V62 Z" fill="none" stroke="#24577a" stroke-width="4"/>
+        <g stroke="#b4582a" stroke-width="6"><path d="M156 90 h70"/><path d="M156 112 h70"/><path d="M156 134 h70"/><path d="M156 156 h70"/><path d="M156 178 h70"/><path d="M156 200 h70"/></g>
+        <g stroke="#2f7a4d" stroke-width="6"><path d="M334 125 h70"/><path d="M334 165 h70"/></g>
+        <polyline id="xf-p" fill="none" stroke="#b4582a" stroke-width="4" points=""/>
+        <polyline id="xf-s" fill="none" stroke="#2f7a4d" stroke-width="4" points=""/>
+        <text x="75" y="280" text-anchor="middle" font-size="18" fill="#b4582a">一次（接電源）</text>
+        <text x="485" y="280" text-anchor="middle" font-size="18" fill="#2f7a4d">二次（接負載）</text>
+        <text x="280" y="28" text-anchor="middle" font-size="18" fill="#24577a">共用同一個磁通</text>
+      </svg>
+    </div>
+    <div style="flex:.85;">
+      <p class="formula fx" style="--d:.5">$\dfrac{V_P}{V_S} = \dfrac{N_P}{N_S} = a, \quad \dfrac{I_P}{I_S} = \dfrac{1}{a}$</p>
+      <ul>
+        <li class="fx" style="--d:.6">理想＝完全沒有損失</li>
+        <li class="fx" style="--d:.7">匝數多的那側電壓高（圖中 6 匝：2 匝 → 電壓 3 : 1）</li>
+        <li class="fx" style="--d:.85">電壓 × $a$、電流 ÷ $a$ → <b>功率不變</b></li>
+        <li class="fx" style="--d:1">波形步調（相角）不變</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 9 真實變壓器 -->
+<section class="slide" data-ch="2" data-src="concepts/real-transformer.md,concepts/transformer-equivalent-circuit.md,concepts/oc-sc-test.md,concepts/beginner-glossary.md">
+  <p class="kicker fx">Ch.2 變壓器</p>
+  <h2 class="fx" style="--d:.1">真實的變壓器：把缺點畫成電路</h2>
+  <div class="cols" style="align-items:flex-start;">
+    <div style="flex:1.15;">
+      <table class="t" style="font-size:22px;">
+        <tr class="fx" style="--d:.3"><th>缺點</th><th>變成電路元件</th></tr>
+        <tr class="fx" style="--d:.5"><td>線圈有電阻</td><td>串聯電阻</td></tr>
+        <tr class="fx" style="--d:.7"><td>磁通漏到空氣</td><td>串聯<b>電抗</b>（不發熱的阻礙）</td></tr>
+        <tr class="fx" style="--d:.9"><td>建立磁通要電流</td><td>並聯電抗 $X_M$</td></tr>
+        <tr class="fx" style="--d:1.1"><td>鐵心發熱</td><td>並聯電阻 $R_C$</td></tr>
+      </table>
+    </div>
+    <div style="flex:.85;">
+      <div class="card fx" style="--d:1.3;margin-bottom:14px;font-size:21px;"><b>開路測試</b><br>不接負載、加額定電壓 → 量出 $R_C$、$X_M$</div>
+      <div class="card fx" style="--d:1.5;font-size:21px;"><b>短路測試</b><br>一側短路、另一側加很低的電壓到額定電流 → 量出串聯的電阻與電抗</div>
+      <p class="small muted fx" style="--d:1.7;margin-top:12px;font-size:19px;">額定：設計上的正常值</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 旋轉線圈 -->
+<section class="slide" data-ch="3" data-src="concepts/rotating-loop.md,concepts/ac-induced-voltage.md" data-anim="loop">
+  <p class="kicker fx">Ch.3 旋轉磁場</p>
+  <h2 class="fx" style="--d:.1">轉動的線圈＝交流發電機</h2>
+  <div class="cols">
+    <div style="flex:1.2;">
+      <svg class="fx" style="--d:.3" viewBox="0 0 640 300" width="640" height="300" aria-label="旋轉線圈與產生的正弦電壓動畫">
+        <rect x="10" y="40" width="50" height="220" rx="6" fill="#b4582a"/><text x="35" y="160" text-anchor="middle" font-size="26" fill="#fff" font-weight="700">N</text>
+        <rect x="200" y="40" width="50" height="220" rx="6" fill="#24577a"/><text x="225" y="160" text-anchor="middle" font-size="26" fill="#fff" font-weight="700">S</text>
+        <g stroke="#9aa3ab" stroke-width="2" stroke-dasharray="6 6"><line x1="62" y1="90" x2="198" y2="90"/><line x1="62" y1="150" x2="198" y2="150"/><line x1="62" y1="210" x2="198" y2="210"/></g>
+        <line id="lp-coil" x1="130" y1="90" x2="130" y2="210" stroke="#1f2328" stroke-width="8" stroke-linecap="round"/>
+        <circle id="lp-a" cx="130" cy="90" r="9" fill="#2f7a4d"/>
+        <circle cx="130" cy="150" r="5" fill="#1f2328"/>
+        <line x1="290" y1="150" x2="630" y2="150" stroke="#5d6470" stroke-width="2"/>
+        <line x1="290" y1="40" x2="290" y2="260" stroke="#5d6470" stroke-width="2"/>
+        <text x="298" y="36" font-size="18">電壓 e</text><text x="590" y="176" font-size="18">時間</text>
+        <polyline id="lp-wave" fill="none" stroke="#b4582a" stroke-width="4" points=""/>
+        <circle id="lp-dot" r="7" fill="#b4582a"/>
+        <text x="130" y="290" text-anchor="middle" font-size="16" fill="#5d6470">從側面看線圈轉動</text>
+      </svg>
+    </div>
+    <div style="flex:.8;">
+      <p class="formula fx" style="--d:.5">$e = \phi_{max}\,\omega\sin\omega t$</p>
+      <p class="fx" style="--d:.7">轉一圈 → 一個完整正弦波</p>
+      <p class="fx" style="--d:.9">電壓取決於：<br><span class="tag t-copper">磁通</span> <span class="tag t-steel">轉速</span> <span class="tag t-green">構造</span></p>
+      <p class="small fx" style="--d:1.1">三組線圈錯開 120° → <b>三相電</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- 11 旋轉磁場 -->
+<section class="slide" data-ch="3" data-src="concepts/rotating-magnetic-field.md,concepts/ac-machines.md" data-anim="rmf">
+  <p class="kicker fx">Ch.3 旋轉磁場</p>
+  <h2 class="fx" style="--d:.1">旋轉磁場：交流馬達的祕密</h2>
+  <div class="cols">
+    <div style="flex:.8;display:flex;justify-content:center;">
+      <svg class="fx" style="--d:.3" viewBox="0 0 400 400" width="400" height="400" aria-label="三相磁場合成旋轉磁場動畫">
+        <circle cx="200" cy="200" r="175" fill="none" stroke="#9aa3ab" stroke-width="24"/>
+        <g font-size="22" font-weight="700" text-anchor="middle"><text x="372" y="207" fill="#b4582a">a</text><text x="110" y="52" fill="#24577a">b</text><text x="110" y="366" fill="#2f7a4d">c</text></g>
+        <line id="rm-a" x1="200" y1="200" x2="200" y2="200" stroke="#b4582a" stroke-width="5" opacity=".75"/>
+        <line id="rm-b" x1="200" y1="200" x2="200" y2="200" stroke="#24577a" stroke-width="5" opacity=".75"/>
+        <line id="rm-c" x1="200" y1="200" x2="200" y2="200" stroke="#2f7a4d" stroke-width="5" opacity=".75"/>
+        <line id="rm-net" x1="200" y1="200" x2="200" y2="200" stroke="#1f2328" stroke-width="10" stroke-linecap="round"/>
+        <circle id="rm-head" r="11" fill="#1f2328"/>
+        <circle cx="200" cy="200" r="7" fill="#1f2328"/>
+        <text x="200" y="395" text-anchor="middle" font-size="15" fill="#5d6470">灰色圓環＝定子（不動的部分）</text>
+      </svg>
+    </div>
+    <div>
+      <ul>
+        <li class="fx" style="--d:.4">三組線圈相隔 120°，通三相電流</li>
+        <li class="fx" style="--d:.6">每組的磁場（彩色）<b>方向固定、大小變</b></li>
+        <li class="fx" style="--d:.8">加起來（黑色）<b>大小不變、一直轉</b></li>
+      </ul>
+      <p class="callout fx" style="--d:1;margin-top:14px;">轉子（會轉的部分）就跟著這個旋轉磁場跑——所有交流馬達的原理。</p>
+      <div class="btns fx" style="--d:1.2;margin-top:14px;"><button class="btn" id="rm-rev">對調兩相 ⇄</button><span class="small muted" id="rm-dir" style="align-self:center;">逆時針</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 轉速 -->
+<section class="slide" data-ch="3" data-src="concepts/electrical-frequency-and-speed.md">
+  <p class="kicker fx">Ch.3 旋轉磁場</p>
+  <h2 class="fx" style="--d:.1">磁極越多，轉得越慢</h2>
+  <p class="formula fx" style="--d:.2">$n = \dfrac{120\,f}{P}$ <span class="small muted">（$f$：頻率 Hz；$P$：極數）</span></p>
+  <div class="cols">
+    <div class="fx" style="--d:.4;text-align:center;">
+      <svg viewBox="0 0 260 260" width="250" height="250" aria-label="兩極磁場旋轉">
+        <circle cx="130" cy="130" r="115" fill="none" stroke="#9aa3ab" stroke-width="16"/>
+        <g class="spin" style="transform-origin:130px 130px;animation-duration:2s"><path d="M130 130 L130 30" stroke="#b4582a" stroke-width="12"/><text x="130" y="60" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">N</text><path d="M130 130 L130 230" stroke="#24577a" stroke-width="12"/><text x="130" y="214" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">S</text></g>
+        <circle cx="130" cy="130" r="8"/>
+      </svg>
+      <p><b>2 極：3600</b> r/min</p>
+    </div>
+    <div class="fx" style="--d:.6;text-align:center;">
+      <svg viewBox="0 0 260 260" width="250" height="250" aria-label="四極磁場旋轉，速度為一半">
+        <circle cx="130" cy="130" r="115" fill="none" stroke="#9aa3ab" stroke-width="16"/>
+        <g class="spin" style="transform-origin:130px 130px;animation-duration:4s">
+          <path d="M130 130 L130 30" stroke="#b4582a" stroke-width="12"/><path d="M130 130 L130 230" stroke="#b4582a" stroke-width="12"/><path d="M130 130 L30 130" stroke="#24577a" stroke-width="12"/><path d="M130 130 L230 130" stroke="#24577a" stroke-width="12"/>
+          <g font-size="20" font-weight="700" fill="#fff" text-anchor="middle"><text x="130" y="58">N</text><text x="130" y="218">N</text><text x="50" y="137">S</text><text x="210" y="137">S</text></g></g>
+        <circle cx="130" cy="130" r="8"/>
+      </svg>
+      <p><b>4 極：1800</b> r/min</p>
+    </div>
+    <div style="flex:.9;">
+      <p class="fx" style="--d:.8">同樣 60 Hz，4 極的 N-S 花紋在一圈重複兩次，所以只轉一半快。</p>
+      <p class="callout fx" style="--d:1;font-size:21px;">$P$ 是「極數」不是「極對數」。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 13 同步發電機 -->
+<section class="slide" data-ch="4" data-src="concepts/synchronous-generator.md,concepts/internal-generated-voltage.md" data-anim="gen">
+  <p class="kicker fx">Ch.4 同步發電機</p>
+  <h2 class="fx" style="--d:.1">同步發電機：動 → 電</h2>
+  <div class="cols">
+    <div style="flex:.8;display:flex;justify-content:center;">
+      <svg class="fx" style="--d:.3" viewBox="0 0 340 340" width="340" height="340" aria-label="同步發電機轉子旋轉與場電流">
+        <circle cx="170" cy="170" r="150" fill="none" stroke="#9aa3ab" stroke-width="22"/>
+        <g class="spin" style="transform-origin:170px 170px;animation-duration:2.5s">
+          <rect x="150" y="60" width="40" height="220" rx="12" fill="#5d6470"/>
+          <rect x="150" y="60" width="40" height="70" rx="12" fill="#b4582a"/><text x="170" y="102" text-anchor="middle" font-size="22" fill="#fff" font-weight="700">N</text>
+          <rect x="150" y="210" width="40" height="70" rx="12" fill="#24577a"/><text x="170" y="252" text-anchor="middle" font-size="22" fill="#fff" font-weight="700">S</text>
+        </g>
+        <g id="gen-glow" opacity=".3"><circle cx="170" cy="170" r="128" fill="none" stroke="#b4582a" stroke-width="8"/></g>
+      </svg>
+    </div>
+    <div>
+      <ul>
+        <li class="fx" style="--d:.4">轉子通直流電（<b>場電流</b>）→ 變成電磁鐵</li>
+        <li class="fx" style="--d:.55">渦輪等<b>原動機</b>帶著它轉 → 定子產生三相電</li>
+        <li class="fx" style="--d:.7">轉速和頻率鎖在一起：$n = 120f/P$</li>
+      </ul>
+      <p class="formula fx" style="--d:.85;margin-bottom:4px;">$E_A = K\phi\omega$</p>
+      <p class="small muted fx" style="--d:.9;font-size:18px;text-align:center;">$E_A$：發電機內部產生的電壓；$K$：構造常數；$\phi$：磁通；$\omega$：轉速</p>
+      <div class="slider fx" style="--d:1"><span>場電流</span><input type="range" id="gen-if" min="0" max="100" value="50"><span id="gen-ea" class="readout" style="min-width:150px;">$E_A$ 中</span></div>
+      <p class="small muted fx" style="--d:1.1;font-size:19px;">轉速必須固定，所以調電壓只能靠場電流：場電流↑ → 磁通↑ → $E_A$↑</p>
+    </div>
+  </div>
+</section>
+
+<!-- 14 負載與功因 -->
+<section class="slide" data-ch="4" data-src="concepts/synchronous-equivalent-circuit.md,concepts/generator-operating-alone.md,examples/ch04-power-factor.md,concepts/beginner-glossary.md">
+  <p class="kicker fx">Ch.4 同步發電機</p>
+  <h2 class="fx" style="--d:.1">接上負載，電壓會變</h2>
+  <div class="cols">
+    <div>
+      <p class="fx" style="--d:.3">發電機內部有<b>同步電抗</b>，電流一流出就造成電壓變化。</p>
+      <p class="fx" style="--d:.5"><b>功率因數（功因）</b>＝ cos（電流與電壓錯開的角度）：步調一致時＝1（單位功因），錯開越多，數字越小。</p>
+      <p class="small fx" style="--d:.7">電流比電壓晚到最高點＝<b>落後</b>（馬達這類線圈型負載）；早到＝<b>超前</b>（電容型）。</p>
+    </div>
+    <div style="flex:.95;">
+      <p class="small muted fx" style="--d:.8;margin-bottom:0;font-size:18px;">例 4-3：無載 480 V，接上同樣 60 A 後的端電壓</p>
+      <svg viewBox="0 -24 470 290" width="470" height="290" aria-label="三種功因下端電壓長條動畫">
+        <line x1="40" y1="225" x2="460" y2="225" stroke="#5d6470"/>
+        <rect class="grow" style="--d:1" x="70" y="72" width="90" height="153" fill="#24577a"/><text class="fx" style="--d:1.6" x="115" y="64" text-anchor="middle" font-size="20">410 V</text><text x="115" y="250" text-anchor="middle" font-size="18">0.8 落後</text>
+        <rect class="grow" style="--d:1.2" x="190" y="50" width="90" height="175" fill="#9aa3ab"/><text class="fx" style="--d:1.8" x="235" y="42" text-anchor="middle" font-size="20">468 V</text><text x="235" y="250" text-anchor="middle" font-size="18">單位功因</text>
+        <rect class="grow" style="--d:1.4" x="310" y="25" width="90" height="200" fill="#b4582a"/><text class="fx" style="--d:2" x="355" y="17" text-anchor="middle" font-size="20">535 V</text><text x="355" y="250" text-anchor="middle" font-size="18">0.8 超前</text>
+        <line class="draw" style="--d:.9" x1="0" y1="46" x2="460" y2="46" stroke="#1f2328" stroke-width="2"/>
+        <text x="0" y="38" font-size="16">無載 480 V</text>
+      </svg>
+      <p class="callout fx" style="--d:2.2;font-size:21px;">落後 → 電壓掉；超前 → 電壓反而升。所以要隨負載調場電流。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 15 同步電動機 -->
+<section class="slide" data-ch="5" data-src="concepts/synchronous-motor.md,concepts/synchronous-motor-torque-speed.md,concepts/synchronous-equivalent-circuit.md,concepts/rotational-motion.md,concepts/beginner-glossary.md" data-anim="motor">
+  <p class="kicker fx">Ch.5 同步電動機</p>
+  <h2 class="fx" style="--d:.1">同步電動機：同一台機器反過來用</h2>
+  <div class="cols">
+    <div style="flex:.8;display:flex;justify-content:center;">
+      <svg class="fx" style="--d:.3" viewBox="0 0 360 360" width="360" height="360" aria-label="淨磁場與轉子磁場之間的轉矩角動畫">
+        <circle cx="180" cy="180" r="160" fill="none" stroke="#9aa3ab" stroke-width="22"/>
+        <path id="mt-arc" d="" fill="#f3e2d6" stroke="#b4582a" stroke-width="2"/>
+        <line id="mt-net" x1="180" y1="180" x2="180" y2="40" stroke="#1f2328" stroke-width="8" stroke-linecap="round"/>
+        <line id="mt-rot" x1="180" y1="180" x2="180" y2="60" stroke="#b4582a" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="180" cy="180" r="8"/>
+        <text id="mt-d" x="180" y="352" text-anchor="middle" font-size="18" fill="#b4582a"></text>
+      </svg>
+    </div>
+    <div>
+      <p class="small fx" style="--d:.4">黑：淨磁場（定子＋轉子磁場合起來）　<span style="color:var(--copper)">橘：轉子磁場</span></p>
+      <p class="fx" style="--d:.55">轉子跟著淨磁場<b>同速</b>轉，落後一個角度＝<b>轉矩角 δ</b>。</p>
+      <div class="slider fx" style="--d:.7"><span>負載</span><input type="range" id="mt-load" min="0" max="120" value="40"></div>
+      <div class="readout fx" style="--d:.8" id="mt-msg">轉速不變，δ 變大</div>
+      <p class="small fx" style="--d:.9">負載越重 δ 越大；δ = 90° 時轉矩（扭力）最大，再重就<b>失去同步</b>。</p>
+      <p class="small muted fx" style="--d:1;font-size:19px;">發電機：轉子磁場在前；電動機：在後。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 16 例題 5-3 -->
+<section class="slide" data-ch="5" data-src="concepts/v-curve.md,concepts/power-factor-correction.md,examples/ch05-power-factor-correction.md,concepts/ac-power.md,concepts/beginner-glossary.md" data-anim="vcurve">
+  <p class="kicker fx">Ch.5 例題引導（例 5-3）</p>
+  <h2 class="fx" style="--d:.1;margin-bottom:12px;">轉一顆旋鈕，省下 28% 損失</h2>
+  <div class="cols" style="gap:30px;">
+    <div style="flex:.9;">
+      <svg class="fx" style="--d:.3" viewBox="0 0 420 230" width="420" height="230" aria-label="V 曲線互動">
+        <line x1="40" y1="200" x2="410" y2="200" stroke="#5d6470"/><line x1="40" y1="10" x2="40" y2="200" stroke="#5d6470"/>
+        <path id="vc-path" d="" fill="none" stroke="#b4582a" stroke-width="4"/>
+        <circle id="vc-dot" r="10" fill="#1f2328"/>
+        <text x="340" y="222" font-size="16">場電流 →</text><text x="46" y="22" font-size="16">電流</text>
+      </svg>
+      <div class="slider fx" style="--d:.5"><span>場電流</span><input type="range" id="vc-if" min="0" max="100" value="20"></div>
+      <div class="readout fx" style="--d:.6" id="vc-msg"></div>
+      <p class="small muted fx" style="--d:.7;font-size:18px;">虛功率 $Q$：在電線上來回、沒被用掉，卻讓電流變大。</p>
+    </div>
+    <div>
+      <p class="small muted fx" style="--d:.8;font-size:18px;">工廠：感應電動機（最常見的馬達）100 kW（功因 0.78 落後）、200 kW（0.8 落後）＋ 同步電動機 150 kW（功因可調）</p>
+      <div class="step fx" style="--d:1"><div class="n">1</div><div><div class="q">各負載虛功率</div><div class="a">$Q = P\tan\theta$（$\theta$：功因 $= \cos\theta$ 的那個角）→ 80.2、150、93 kVAR</div></div></div>
+      <div class="step fx" style="--d:1.3"><div class="n">2</div><div><div class="q">同步電動機 0.85 落後</div><div class="a">總 $Q$ 323.2 kVAR → 功因 0.812 → <b>667 A</b></div></div></div>
+      <div class="step fx" style="--d:1.6"><div class="n">3</div><div><div class="q">改成 0.85 超前（過激）</div><div class="a">它改為供給 93 kVAR → 總 $Q$ 137.2 → 功因 0.957 → <b>566 A</b></div></div></div>
+      <p class="callout fx" style="--d:1.9;font-size:21px;">輸電線損失 ∝ 電流² → 少約 <b>28%</b>，負載拿到的功率一樣。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 17 總結圖 -->
+<section class="slide" data-ch="6" data-src="concepts/four-magnetic-principles.md,concepts/linear-dc-machine.md,concepts/transformer.md,concepts/ac-machines.md,concepts/synchronous-generator.md,concepts/synchronous-motor.md">
+  <p class="kicker fx">收尾</p>
+  <h2 class="fx" style="--d:.1">一張圖串起全部</h2>
+  <svg viewBox="0 0 1136 500" width="1136" height="500" aria-label="五章概念關係圖">
+    <defs><marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5d6470"/></marker></defs>
+    <g font-size="21" text-anchor="middle">
+      <g class="fx" style="--d:.3"><rect x="388" y="0" width="360" height="74" rx="12" fill="#f3e2d6"/><text x="568" y="32" font-weight="700">Ch.1 磁場四大原理</text><text x="568" y="60" font-size="18">電流、磁通變化、受力、運動</text></g>
+      <g class="fx" style="--d:.9"><rect x="40" y="150" width="320" height="80" rx="12" fill="#def0e4"/><text x="200" y="183" font-weight="700">Ch.2 變壓器</text><text x="200" y="212" font-size="18">磁通變化 → 換電壓</text></g>
+      <g class="fx" style="--d:1"><rect x="388" y="150" width="360" height="80" rx="12" fill="#ffffff" stroke="#d9d2c5"/><text x="568" y="183" font-weight="700">Ch.3 旋轉磁場</text><text x="568" y="212" font-size="18">三相電流 → 會轉的磁場</text></g>
+      <g class="fx" style="--d:1.1"><rect x="776" y="150" width="320" height="80" rx="12" fill="#dde9f1"/><text x="936" y="183" font-weight="700">Ch.1 線性直流機</text><text x="936" y="212" font-size="18">推是發電、拉是馬達</text></g>
+      <g class="fx" style="--d:1.7"><rect x="140" y="330" width="360" height="90" rx="12" fill="#f3e2d6"/><text x="320" y="366" font-weight="700">Ch.4 同步發電機</text><text x="320" y="396" font-size="18">動 → 電；轉子磁場在前</text></g>
+      <g class="fx" style="--d:1.8"><rect x="636" y="330" width="360" height="90" rx="12" fill="#dde9f1"/><text x="816" y="366" font-weight="700">Ch.5 同步電動機</text><text x="816" y="396" font-size="18">電 → 動；轉子磁場在後</text></g>
+      <text class="fx" style="--d:2.4" x="568" y="472" font-size="24" fill="#b4582a" font-weight="700">同一台機器，功率方向相反</text>
+    </g>
+    <g stroke="#5d6470" stroke-width="3" fill="none" marker-end="url(#a2)">
+      <path class="draw" style="--d:.5" d="M470 74 L230 145"/><path class="draw" style="--d:.5" d="M568 74 L568 145"/><path class="draw" style="--d:.5" d="M666 74 L906 145"/>
+      <path class="draw" style="--d:1.3" d="M500 230 L360 325"/><path class="draw" style="--d:1.3" d="M636 230 L776 325"/>
+      <path class="draw" style="--d:1.3" d="M936 230 L900 325" stroke-dasharray="6 6"/>
+    </g>
+    <g stroke="#b4582a" stroke-width="4" class="fx" style="--d:2.1"><path d="M505 368 L630 368" marker-end="url(#a2)"/><path d="M630 386 L505 386" marker-end="url(#a2)"/></g>
+  </svg>
+</section>
+
+<!-- 18 自我檢測 -->
+<section class="slide" data-ch="6" data-src="concepts/transformer.md,examples/ch01-air-gap.md,concepts/electrical-frequency-and-speed.md,concepts/synchronous-motor-torque-speed.md,concepts/v-curve.md">
+  <p class="kicker fx">收尾</p>
+  <h2 class="fx" style="--d:.1;margin-bottom:12px;">自我檢測（點選答案）</h2>
+  <div class="quiz">
+    <div class="card fx" style="--d:.3" data-answer="b"><div class="qq">1. 變壓器<b>不會</b>改變什麼？</div>
+      <button class="opt" data-k="a">A. 電壓</button><button class="opt" data-k="b">B. 頻率</button><button class="opt" data-k="c">C. 電流</button>
+      <div class="why">變壓器換電壓，但頻率不變。</div></div>
+    <div class="card fx" style="--d:.4" data-answer="c"><div class="qq">2. 鐵心切開一小段氣隙會？</div>
+      <button class="opt" data-k="a">A. 幾乎沒影響</button><button class="opt" data-k="b">B. 磁阻變小</button><button class="opt" data-k="c">C. 氣隙佔大部分磁阻</button>
+      <div class="why">例 1-2：1/800 的長度，磁阻卻是鐵心近 5 倍。</div></div>
+    <div class="card fx" style="--d:.5" data-answer="a"><div class="qq">3. 60 Hz、4 極，轉速是？</div>
+      <button class="opt" data-k="a">A. 1800 r/min</button><button class="opt" data-k="b">B. 3600 r/min</button><button class="opt" data-k="c">C. 240 r/min</button>
+      <div class="why">$n = 120 \times 60 / 4 = 1800$。</div></div>
+    <div class="card fx" style="--d:.6" data-answer="b"><div class="qq">4. 同步電動機加重負載（未失步），轉速？</div>
+      <button class="opt" data-k="a">A. 變慢</button><button class="opt" data-k="b">B. 不變</button><button class="opt" data-k="c">C. 變快</button>
+      <div class="why">轉速鎖在電源頻率，變的是轉矩角。</div></div>
+    <div class="card fx" style="--d:.7" data-answer="c"><div class="qq">5. 過激的同步電動機像什麼？</div>
+      <button class="opt" data-k="a">A. 電感，吸收虛功率</button><button class="opt" data-k="b">B. 純電阻</button><button class="opt" data-k="c">C. 電容，供給虛功率</button>
+      <div class="why">場電流大時電流超前，能改善功因。</div></div>
+  </div>
+</section>
+
+</div>
+
+<div class="nav"><span class="pg" id="pg"></span><button id="prev" aria-label="上一頁">←</button><button id="next" aria-label="下一頁">→</button></div>
+
+<script>
+  const CHAPTERS = ["開場", "Ch.1 磁與力", "Ch.2 變壓器", "Ch.3 旋轉磁場", "Ch.4 同步發電機", "Ch.5 同步電動機", "收尾"];
+  const stage = document.getElementById("stage");
+  const slides = [...document.querySelectorAll(".slide")];
+  const total = slides.length;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let cur = -1;
+
+  slides.forEach(s => {
+    const ch = +s.dataset.ch;
+    const top = document.createElement("div");
+    top.className = "topbar";
+    top.innerHTML = `<span class="brand">電機機械教學簡報</span>` + CHAPTERS.map((c, k) =>
+      `<span class="chip${k === ch ? " on" : ""}" data-first="${k}">${c}</span>`).join("");
+    s.prepend(top);
+  });
+  const firstOfChapter = {};
+  slides.forEach((s, i) => { const c = +s.dataset.ch; if (!(c in firstOfChapter)) firstOfChapter[c] = i; });
+
+  /* ---------- 各頁動畫 ---------- */
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const $ = id => document.getElementById(id);
+  const anims = {};
+  let raf = null, active = null;
+  function loop(fn) { const t0 = performance.now(); const step = t => { fn((t - t0) / 1000); raf = requestAnimationFrame(step); }; raf = requestAnimationFrame(step); }
+
+  // 第 6 頁：線性直流機（例 1-10 的穩態速度）
+  anims.linear = () => {
+    const modes = [
+      { v: 120, f: 0, txt: "速度 120 m/s", role: "電流 0，不轉換能量", color: "var(--muted)" },
+      { v: 111, f: -1, txt: "速度 111 m/s（變慢）", role: "電動機：電 → 機械", color: "var(--steel)" },
+      { v: 129, f: 1, txt: "速度 129 m/s（變快）", role: "發電機：機械 → 電", color: "var(--copper)" }];
+    let m = modes[0], x = 120, cv = 120;
+    const sec = slides.find(s => s.dataset.anim === "linear");
+    sec.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
+      sec.querySelectorAll("[data-mode]").forEach(o => o.classList.remove("on")); b.classList.add("on");
+      m = modes[+b.dataset.mode]; $("lin-speed").textContent = m.txt; $("lin-role").textContent = m.role; $("lin-role").style.color = m.color;
+    });
+    let last = 0;
+    loop(t => {
+      const dt = Math.min(.05, t - last); last = t;
+      cv += (m.v - cv) * Math.min(1, dt * 3);
+      x += cv * dt * 2.2; if (x > 520) x = 110;
+      $("lin-bar").setAttribute("transform", `translate(${x},0)`);
+      const L = m.f * 55, g = $("lin-force");
+      g.children[0].setAttribute("x2", L); g.children[0].setAttribute("x1", 0);
+      g.children[1].setAttribute("points", m.f ? `${L + 14 * m.f},150 ${L},140 ${L},160` : "0,150 0,150 0,150");
+    });
+  };
+
+  // 第 8 頁：變壓器一次／二次電壓波形
+  anims.xfmr = () => loop(t => {
+    const p = [], s = [];
+    for (let k = 0; k <= 60; k++) {
+      const ph = k / 60 * 4 * Math.PI - t * 4;
+      p.push(`${10 + k * 2.3},${150 - 60 * Math.sin(ph)}`);
+      s.push(`${414 + k * 2.3},${150 - 20 * Math.sin(ph)}`);
+    }
+    $("xf-p").setAttribute("points", p.join(" ")); $("xf-s").setAttribute("points", s.join(" "));
+  });
+
+  // 第 10 頁：旋轉線圈與正弦波
+  anims.loop = () => {
+    let pts = [];
+    loop(t => {
+      const th = t * 2.2, c = Math.cos(th), sn = Math.sin(th);
+      $("lp-coil").setAttribute("y1", 150 - 60 * c); $("lp-coil").setAttribute("y2", 150 + 60 * c);
+      $("lp-coil").setAttribute("x1", 130 - 18 * sn); $("lp-coil").setAttribute("x2", 130 + 18 * sn);
+      $("lp-a").setAttribute("cy", 150 - 60 * c); $("lp-a").setAttribute("cx", 130 - 18 * sn);
+      const x = 292 + ((th / (2 * Math.PI)) % 2) * 165, y = 150 - 95 * Math.sin(th);
+      if (pts.length && x < pts[pts.length - 1][0]) pts = [];
+      pts.push([x, y]);
+      $("lp-wave").setAttribute("points", pts.map(p => p.join(",")).join(" "));
+      $("lp-dot").setAttribute("cx", x); $("lp-dot").setAttribute("cy", y);
+    });
+  };
+
+  // 第 11 頁：三相合成旋轉磁場（每相方向固定、大小正弦變化）
+  let rmDir = 1;
+  $("rm-rev").onclick = () => { rmDir *= -1; $("rm-dir").textContent = rmDir > 0 ? "逆時針" : "順時針"; };
+  anims.rmf = () => loop(t => {
+    const w = t * 1.6, R = 110, ang = [0, 120, 240].map(d => d * Math.PI / 180);
+    const ph = rmDir > 0 ? [0, -120, -240] : [0, -240, -120];
+    let nx = 0, ny = 0;
+    ["rm-a", "rm-b", "rm-c"].forEach((id, k) => {
+      const mag = Math.sin(w + ph[k] * Math.PI / 180) * R;
+      const x = mag * Math.cos(ang[k]), y = -mag * Math.sin(ang[k]);
+      nx += x; ny += y;
+      $(id).setAttribute("x2", 200 + x); $(id).setAttribute("y2", 200 + y);
+    });
+    $("rm-net").setAttribute("x2", 200 + nx / 1.5 * 1.45); $("rm-net").setAttribute("y2", 200 + ny / 1.5 * 1.45);
+    $("rm-head").setAttribute("cx", 200 + nx / 1.5 * 1.45); $("rm-head").setAttribute("cy", 200 + ny / 1.5 * 1.45);
+  });
+
+  // 第 13 頁：場電流 → E_A（定性）
+  anims.gen = () => {
+    const upd = () => {
+      const v = +$("gen-if").value;
+      const label = v < 34 ? "小" : v < 67 ? "中" : "大";
+      $("gen-ea").innerHTML = "E<sub>A</sub> " + label;
+      $("gen-glow").setAttribute("opacity", (.1 + v / 110).toFixed(2));
+      $("gen-glow").firstElementChild.setAttribute("stroke-width", 2 + v / 6);
+    };
+    $("gen-if").oninput = upd; upd();
+  };
+
+  // 第 15 頁：轉矩角（轉矩 ∝ sin δ，最大在 90°）
+  anims.motor = () => {
+    let slipPhase = 0, last = 0;
+    loop(t => {
+      const dt = Math.min(.05, t - last); last = t;
+      const load = +$("mt-load").value / 100;
+      const base = t * 1.3;
+      let delta, msg, col = "var(--ink)";
+      if (load <= 1) { delta = Math.asin(load); slipPhase = 0; msg = load === 1 ? "δ = 90°：轉矩最大（脫出轉矩）" : "轉速不變，只有 δ 變大"; }
+      else { slipPhase += dt * 2.5 * (load - 1) * 5; delta = slipPhase; msg = "超過脫出轉矩 → 失去同步、劇烈震動"; col = "#b33"; }
+      $("mt-msg").textContent = msg; $("mt-msg").style.color = col;
+      const a1 = base, a2 = base - delta;
+      const P = (a, r) => [180 + r * Math.sin(a), 180 - r * Math.cos(a)];
+      const [nx, ny] = P(a1, 140), [rx, ry] = P(a2, 120);
+      $("mt-net").setAttribute("x2", nx); $("mt-net").setAttribute("y2", ny);
+      $("mt-rot").setAttribute("x2", rx); $("mt-rot").setAttribute("y2", ry);
+      const d = load <= 1 ? delta : (delta % (2 * Math.PI));
+      const [ax, ay] = P(a1, 60), [bx, by] = P(a1 - d, 60);
+      $("mt-arc").setAttribute("d", load <= 1 && d > .02 ? `M180 180 L${ax} ${ay} A60 60 0 0 0 ${bx} ${by} Z` : "");
+      $("mt-d").textContent = load <= 1 ? `δ ≈ ${Math.round(delta * 180 / Math.PI)}°` : "失步";
+    });
+  };
+
+  // 第 16 頁：V 曲線
+  anims.vcurve = () => {
+    const X = f => 50 + f * 3.5;
+    const yy = f => 200 - (35 + 150 * Math.pow(Math.abs(f - 50) / 50, 1.15));
+    let d = ""; for (let f = 0; f <= 100; f += 2) d += (f ? " L" : "M") + X(f) + " " + yy(f);
+    $("vc-path").setAttribute("d", d);
+    const upd = () => {
+      const f = +$("vc-if").value;
+      $("vc-dot").setAttribute("cx", X(f)); $("vc-dot").setAttribute("cy", yy(f));
+      const m = $("vc-msg");
+      if (f < 45) { m.textContent = "欠激：電流落後，像電感，吸收虛功率"; m.style.color = "var(--steel)"; }
+      else if (f <= 55) { m.textContent = "單位功因：電流最小"; m.style.color = "var(--ink)"; }
+      else { m.textContent = "過激：電流超前，像電容，供給虛功率"; m.style.color = "var(--green)"; }
+    };
+    $("vc-if").oninput = upd; upd();
+  };
+
+  /* ---------- 換頁 ---------- */
+  function show(n) {
+    n = Math.max(0, Math.min(total - 1, n));
+    if (n === cur) return;
+    const fwd = n > cur;
+    slides.forEach((s, i) => {
+      s.classList.remove("out-left", "from-left");
+      if (i === cur && i !== n) { s.classList.remove("active"); if (fwd) s.classList.add("out-left"); }
+    });
+    const next = slides[n];
+    if (!fwd) { next.classList.add("from-left"); void next.offsetWidth; }
+    next.classList.add("active");
+    next.classList.remove("from-left");
+    cur = n;
+    if (raf) cancelAnimationFrame(raf); raf = null;
+    const a = next.dataset.anim;
+    if (a && anims[a]) anims[a]();
+    $("pg").textContent = `${n + 1} / ${total}`;
+    $("progress").style.width = `${(n + 1) / total * 100}%`;
+    try { history.replaceState(null, "", "#" + (n + 1)); } catch (e) {}
+  }
+  function fit() {
+    const k = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = `translate(-50%, -50%) scale(${k})`;
+  }
+  document.addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (chip) return show(firstOfChapter[+chip.dataset.first]);
+    const toc = e.target.closest("[data-goto]"); if (toc) return show(+toc.dataset.goto - 1);
+    const opt = e.target.closest(".opt");
+    if (opt) {
+      const card = opt.closest("[data-answer]");
+      card.querySelectorAll(".opt").forEach(b => b.classList.remove("right", "wrong"));
+      opt.classList.add(opt.dataset.k === card.dataset.answer ? "right" : "wrong");
+      card.querySelector(`.opt[data-k="${card.dataset.answer}"]`).classList.add("right");
+      card.querySelector(".why").classList.add("show");
+    }
+  });
+  $("prev").onclick = () => show(cur - 1);
+  $("next").onclick = () => show(cur + 1);
+  document.addEventListener("keydown", e => {
+    if (e.target.tagName === "INPUT") return;
+    if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); show(cur + 1); }
+    if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); show(cur - 1); }
+    if (e.key === "Home") show(0);
+    if (e.key === "End") show(total - 1);
+  });
+  let x0 = null;
+  document.addEventListener("touchstart", e => { if (e.target.tagName !== "INPUT") x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener("touchend", e => {
+    if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1)); x0 = null;
+  });
+  window.addEventListener("resize", fit);
+  fit();
+  show((parseInt(location.hash.slice(1)) || 1) - 1);
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.renderMathInElement) renderMathInElement(document.body, {
+      delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }], throwOnError: false });
+  });
+</script>
+</body>
+</html>

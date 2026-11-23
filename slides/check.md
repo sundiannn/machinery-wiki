@@ -131,3 +131,91 @@
 - 3 輪檢查：9 頁重生 → 2 頁重生 → 0 頁重生，全部通過
 - 每頁重生次數：第 14、15 頁各 2 次；第 3、5、8、9、11、13、16 頁各 1 次；其餘 0 次（皆未達 3 次上限）
 - 第 3 輪後只採納 3 項次要建議的用字微調（第 3、9、16 頁），未再送檢，內容皆直接引自 wiki，見 log
+
+## 第 4 輪（2026-11-23，檢查 v4：使用者要求改版——簡報移到首頁、不顯示出處、精簡文字、加入動畫與互動）
+
+> 由新的子代理執行；本輪起動畫與按鈕／滑桿顯示的內容也列入檢查。
+
+| 頁 | 依據的 wiki 頁 | 事實可追溯 | 新手看得懂 | 結果 | 修正內容 |
+|---|---|---|---|---|---|
+| 1 開場 | concepts/electric-machines.md | ✅ | ✅ | 通過 | — 發電機「機械→電」、電動機「電→機械」、變壓器「電→電」及「同一套磁的原理」都與 electric-machines.md 及其連結的 four-magnetic-principles.md 一致。 |
+| 2 目錄 | index.md | ✅ | ✅ | 通過 | — 「發電機和電動機是同一台機器」對應 index.md「和同步發電機是同一台機器」；章節卡片的 data-goto（3/7/10/13/15）都跳到正確頁。 |
+| 3 四大原理 | four-magnetic-principles.md、faraday-law.md、induced-force.md、motional-voltage.md | ✅ | ✅ | 通過 | — 四個原理與表格一致；callout「磁通再大、不變就沒有」對應 faraday-law.md「磁通再大，只要不變，就不會感應出電壓」。 |
+| 4 鐵心與磁路 | magnetic-field-and-permeability.md、magnetic-circuit.md | ❌ | ❌ | 重生 | (1) 表格「磁阻 $\mathfrak{R} = \dfrac{l}{\mu A}$（長度 ÷ 導磁係數 × 面積）」：括號裡的文字照一般運算順序會讀成 $(l/\mu)\times A$，跟公式不一樣。改成「長度 ÷（導磁係數 × 面積）」。(2)「導磁係數」第一次出現就在這個表格，前面沒有解釋。在左欄第一句後補一句，可用 wiki 的白話說法：「導磁係數 μ：材料『多容易被磁化』；鋼的 μ 是空氣的幾千倍」（magnetic-field-and-permeability.md 白話解釋：「μ 是材料『多容易被磁化』」）。(3)（順手）「磁動勢 $Ni$」補上「（匝數 N × 電流 i）」。 |
+| 5 例題 1-2 | examples/ch01-air-gap.md、magnetic-field-and-permeability.md、beginner-glossary.md | ✅ | ✅ | 通過 | — 66,300、316,000、382,300、0.602 A、1/800、4.8 倍（316,000/66,300 ≈ 4.77）都對；長條比例 63:300 也正確。 |
+| 6 線性直流機 | concepts/linear-dc-machine.md、examples/ch01-linear-machine.md | ✅ | ✅ | 通過 | — 三種按鈕的讀數 120 / 111（電動機）/ 129（發電機）m/s、「電流 0」、啟動 400 A 都和例 1-10 一致。電池上端是正極，電流在棒子裡由上往下，B 指入紙面，所以受力向右，跟動畫中棒子往右跑一致。拉力箭頭向後、推力箭頭向前也正確。 |
+| 7 為什麼需要變壓器 | concepts/transformer.md、examples/ch02-transmission.md | ✅ | ✅ | 通過 | — 12～25 kV、110 kV～近 1000 kV、12～34.5 kV、120 V、1484 W、16.7 W（約 1/89）都有出處。 |
+| 8 理想變壓器 | concepts/ideal-transformer.md、faraday-law.md、beginner-glossary.md | ❌ | ✅ | 重生 | 動畫的電壓比和同頁公式對不上。SVG 畫了一次側 6 匝（6 條橘線）、二次側 2 匝（2 條綠線），匝數比是 3。可是 `anims.xfmr` 的波形振幅是 `60 * Math.sin(ph)`（一次）和 `24 * Math.sin(ph)`（二次），比例只有 2.5，違反同頁的 $V_P/V_S = N_P/N_S$（ideal-transformer.md）。把 `s.push(\`${414 + k * 2.3},${150 - 24 * Math.sin(ph)}\`)` 的 24 改成 20，比例就是 3:1。（兩邊同相位與「波形步調不變」一致，這點沒問題。） |
+| 9 真實變壓器 | real-transformer.md、transformer-equivalent-circuit.md、oc-sc-test.md、beginner-glossary.md | ✅ | ✅ | 通過 | — 四個缺點對應的元件與接法、開路測試求 $R_C, X_M$、短路測試求串聯電阻與電抗，都和 wiki 表格一致。 |
+| 10 旋轉線圈 | concepts/rotating-loop.md、ac-induced-voltage.md | ✅ | ✅ | 通過 | — 動畫：線圈垂直磁場（磁通最大）時 e=0，平行時 e 最大，與 $\phi_{max}\omega\sin\omega t$ 一致；每轉一圈畫一個正弦週期，對應「轉一圈→一個完整正弦波」。 |
+| 11 旋轉磁場 | concepts/rotating-magnetic-field.md、ac-machines.md | ✅ | ✅ | 通過 | — 推算 `anims.rmf`：合成向量 = 1.5(sin w, −cos w)，在畫面上是逆時針轉，和預設標示「逆時針」相符；按「對調兩相」後改成順時針，也和 wiki「任意兩相的電流對調…改為順時針」一致。各相方向固定、大小正弦變化；合成大小固定。 |
+| 12 轉速 | concepts/electrical-frequency-and-speed.md | ✅ | ✅ | 通過 | — $n = 120f/P$、3600／1800 r/min、「P 是極數不是極對數」都有出處；兩極動畫週期 2 s、四極 4 s，正好是一半速度。 |
+| 13 同步發電機 | concepts/synchronous-generator.md、internal-generated-voltage.md | ✅ | ❌ | 重生 | 頁面上的公式 $E_A = K\phi\omega$ 和滑桿讀數「$E_A$ 小／中／大」都用了 $E_A$，但這一頁和前面各頁都沒說 $E_A$ 是什麼（K、φ、ω 也沒說）。在公式下面補一行，依 internal-generated-voltage.md 的「每相內生電壓」「代表電機構造的常數」：「$E_A$：發電機內部產生的電壓；K：由構造決定的常數；φ：磁通；ω：轉速」。 |
+| 14 負載與功因 | synchronous-equivalent-circuit.md、generator-operating-alone.md、examples/ch04-power-factor.md、beginner-glossary.md | ✅ | ❌ | 重生 | 「功率因數（功因）：電流和電壓步調差多少，1 叫單位功因」沒交代數值往哪個方向變。讀者會以為「差越多、數字越大」，也就看不懂右邊「0.8 落後／單位功因／0.8 超前」的長條圖。依 glossary「功率因數：$\cos\theta$，$\theta$ 是電壓與電流錯開的角度；功因 1 稱為單位功因」改成：「功率因數（功因）＝ cos（電流與電壓錯開的角度）：步調完全一致時＝1（單位功因），錯開越多，數字越小」。（長條 410／468／535 V 與無載線 480 V 的高度比例都正確。） |
+| 15 同步電動機 | synchronous-motor.md、synchronous-motor-torque-speed.md、synchronous-equivalent-circuit.md、rotational-motion.md、beginner-glossary.md | ✅ | ✅ | 通過 | — `anims.motor`：轉子（橘）以同速落後淨磁場（黑）δ，δ = asin(負載)，滑桿到 100 時 δ = 90°，顯示「轉矩最大（脫出轉矩）」；超過時轉子一圈圈掉隊，顯示「失去同步、劇烈震動」。三段都和 synchronous-motor-torque-speed.md 一致。「發電機在前／電動機在後」對應 synchronous-motor.md 的表格。 |
+| 16 例題 5-3 | v-curve.md、power-factor-correction.md、examples/ch05-power-factor-correction.md、ac-power.md、beginner-glossary.md | ✅ | ❌ | 重生 | 步驟 1 的「$Q = P\tan\theta$ → 80.2、150、93 kVAR」數字來源不明：頁面沒列出兩台感應電動機的功率和功因，θ 也沒在任何頁定義過，讀者沒辦法算出 80.2 和 150。(1) 把「工廠：兩台感應電動機（最常見的馬達，功因落後）＋ 一台 150 kW 同步電動機」改成「工廠：感應電動機 100 kW（功因 0.78 落後）、200 kW（0.8 落後）＋ 同步電動機 150 kW（功因可調）」（照例題「負載 1：感應電動機，100 kW、0.78 落後；負載 2：感應電動機，200 kW、0.8 落後」）。(2) 步驟 1 補「（θ：功因 = cosθ 的那個角）」。V 曲線讀數「欠激：落後、像電感、吸收虛功率／單位功因：電流最小／過激：超前、像電容、供給虛功率」以及 667 A、566 A、28% 都正確。 |
+| 17 總結圖 | four-magnetic-principles.md、linear-dc-machine.md、transformer.md、ac-machines.md、synchronous-generator.md、synchronous-motor.md | ✅ | ✅ | 通過 | — 各框文字與 wiki 一致；「同一台機器，功率方向相反」對應 synchronous-motor.md「同一台實體機器」及發電機／電動機的功率方向表。 |
+| 18 自我檢測 | transformer.md、examples/ch01-air-gap.md、electrical-frequency-and-speed.md、synchronous-motor-torque-speed.md、v-curve.md | ✅ | ✅ | 通過 | — 五題的答案與解說都有出處；第 5 題「能改善功因」由 v-curve.md 連到的 power-factor-correction.md 支持。 |
+
+### 次要建議（不影響通過）
+- 第 3 頁：高中課本寫的是 $\Delta\phi/\Delta t$，$\dfrac{d\phi}{dt}$ 可加一句「（磁通變化的快慢）」。③ 的 SVG 中，棒子左右來回擺動，綠色受力箭頭卻一直朝右，看起來有點矛盾。可以讓棒子只往右移，或拿掉擺動。
+- 第 5 頁：「截面 12 cm²（氣隙算 12.6 cm²）」沒說為什麼，可補「（磁通在氣隙會向外散開，有效面積多 5%）」（ch01-air-gap.md 步驟 3）。磁阻數字可加單位 A·turns/Wb。
+- 第 6 頁：「→ 停在穩定速度」可能被誤解成「停下來」，建議改成「→ 最後維持一個穩定速度」。
+- 第 8 頁：標題用了「理想」，可補一句「理想＝完全沒有損失」（ideal-transformer.md 一句話說明）。
+- 第 9 頁：短路測試卡片可補成「一側短路、另一側加很低的電壓，調到額定電流」（oc-sc-test.md 白話解釋「只要很低的電壓就有額定電流」）。不然新手會擔心「短路」很危險。
+- 第 10 頁：公式 $e = \phi_{max}\omega\sin\omega t$ 可標註「$\phi_{max}$：穿過線圈的最大磁通；ω：角速度」。
+- 第 11 頁：可補一句「三股電流輪流到達最大值，彼此錯開 1/3 週期」，讓「方向固定、大小變→加起來會轉」的因果更清楚。另外，`rm-net` 畫成 1.35 倍單相峰值（`nx / 1.5 * 1.35`），wiki 是 1.5 倍（$|\mathbf{B}_{net}| = 1.5B_M$）。這多半是為了不碰到定子圓環，可以接受；若空間允許，可改成 1.5 倍。
+- 第 14 頁：「電流較慢＝落後」容易被理解成電流跑得慢，建議改成「電流比電壓晚到最高點＝落後」（glossary 原文）。「端電壓」可補「（送到外面的電壓）」。
+- 第 16 頁：V 曲線縱軸「電流」可寫成「電動機電流」；單位 kVAR 第一次出現，可補「（虛功率的單位）」。
+- 第 17 頁：虛線箭頭只從「線性直流機」指向 Ch.5。如果要表達「同一台機器兩種都能當」，可以也指向 Ch.4，或把箭頭放在兩框之間。
+
+### 本輪統計
+- 通過：13 頁（1、2、3、5、6、7、9、10、11、12、15、17、18）
+- 重生：5 頁（4、8、13、14、16）
+
+## 第 5 輪（2026-11-23，檢查 v5：重生第 4、8、13、14、16 頁後）
+
+> 由新的子代理執行；細查重生與小修的 9 頁，其餘略讀檢查退步。
+
+| 頁 | 依據的 wiki 頁 | 事實可追溯 | 新手看得懂 | 結果 | 修正內容 |
+|---|---|---|---|---|---|
+| 1 | concepts/electric-machines.md | ✅ | ✅ | 通過 | 略讀，無退步 |
+| 2 | index.md | ✅ | ✅ | 通過 | 略讀，無退步（章節跳頁 3/7/10/13/15 與實際頁碼相符） |
+| 3 | four-magnetic-principles, faraday-law, induced-force, motional-voltage | ✅ | ✅ | 通過 | 無。四大原理和「是誰的基礎」都對得上 four-magnetic-principles；新的提醒框加上「線圈不動時」，和第④項（導線運動也會有電壓）不再互相矛盾；「磁通再大、不變就沒有」對得上 faraday-law 的白話解釋 |
+| 4 | magnetic-field-and-permeability, magnetic-circuit | ✅ | ✅ | 通過 | 無。「2000～6000 倍」出自〔講義 p.7〕；$\mu$ 是「多容易被磁化」、磁動勢 $Ni$、$\mathfrak{R}=l/(\mu A)$ 和電路／磁路對照表都對得上 magnetic-circuit；每個符號都有括號白話說明；圖中線圈畫在鐵心左腳，磁通沿鐵心繞一圈，合理 |
+| 5 | examples/ch01-air-gap, magnetic-field-and-permeability, beginner-glossary | ✅ | ✅ | 通過 | 略讀，無退步（66,300、316,000、382,300、0.602 A、1/800、4.8 倍，以及長條比例 63:300 都正確） |
+| 6 | linear-dc-machine, examples/ch01-linear-machine | ✅ | ✅ | 通過 | 無。無載 120 m/s、電流 0；往後拉 → 111 m/s、電動機；往前推 → 129 m/s、發電機，三種情況的方向和數值都跟例 1-10 的 (a)(b)(c) 一致；動畫中棒子往右跑（往前），力的箭頭方向也對；啟動電流 400 A 遠大於運轉時的 30 A，有出處 |
+| 7 | concepts/transformer, examples/ch02-transmission | ✅ | ✅ | 通過 | 略讀，無退步（12～25 kV、110 kV～近 1000 kV、12～34.5 kV、120 V、1484 W／16.7 W，約 1/89） |
+| 8 | ideal-transformer, faraday-law, beginner-glossary | ✅ | ✅ | 通過 | 無。$V_P/V_S=N_P/N_S=a$、$I_P/I_S=1/a$、功率不變、相角不變都出自〔講義 p.4–6〕；圖中一次側 6 匝、二次側 2 匝，動畫兩邊振幅 60 比 20，剛好 3:1，而且兩個波形同相，和「波形步調不變」一致；「共用同一個磁通」可由 faraday-law 連到的互磁通說法支持；一次／二次直接標在圖上（接電源／接負載） |
+| 9 | real-transformer, transformer-equivalent-circuit, oc-sc-test, beginner-glossary | ✅ | ✅ | 通過 | 無。四個缺點和電路元件的對應表與 transformer-equivalent-circuit 完全一致；「電抗＝不發熱的阻礙」對得上詞彙表；開路測試（加額定電壓 → 量出 $R_C$、$X_M$）、短路測試（加很低的電壓到額定電流 → 量出串聯阻抗）對得上 oc-sc-test；「額定」在同一頁有解釋 |
+| 10 | rotating-loop, ac-induced-voltage | ✅ | ✅ | 通過 | 略讀，無退步 |
+| 11 | rotating-magnetic-field, ac-machines | ✅ | ✅ | 通過 | 無。新加的「灰色圓環＝定子」「轉子（會轉的部分）」對得上 ac-machines；動畫數學驗證過：每相方向固定、大小按正弦變化，合成磁場大小固定（1.5 倍），而且逆時針轉；「對調兩相」後變順時針，符合〔講義 p.16〕；a、b、c 三相的位置（0°、120°、240°）也正確 |
+| 12 | electrical-frequency-and-speed | ✅ | ✅ | 通過 | 略讀，無退步 |
+| 13 | synchronous-generator, internal-generated-voltage | ✅ | ✅ | 通過 | 無。場電流是直流、轉子變成電磁鐵、原動機帶它轉、定子產生三相電、$n=120f/P$ 都對得上 synchronous-generator；$E_A=K\phi\omega$ 和各符號的說明對得上 internal-generated-voltage；「轉速必須固定，所以只能靠場電流調電壓」出自〔講義 p.2、p.22〕；滑桿只做定性的「小／中／大」單調關係，沒有亂給數字；定子（第 11 頁）、三相（第 10 頁）都已在前面解釋 |
+| 14 | synchronous-equivalent-circuit, generator-operating-alone, examples/ch04-power-factor, beginner-glossary | ✅ | ✅ | 通過 | 無。410／468／535 V 對得上例 4-3（468.4 V 四捨五入）；長條高度依比例量過（以 480 V 為 179 px 換算，分別是 153、175、200 px），正確；功因、單位功因、落後／超前的定義對得上詞彙表；「落後讓電壓掉、超前讓電壓升、要調場電流」對得上 generator-operating-alone |
+| 15 | synchronous-motor, synchronous-motor-torque-speed, synchronous-equivalent-circuit, rotational-motion, beginner-glossary | ✅ | ✅ | 通過 | 略讀，無退步 |
+| 16 | v-curve, power-factor-correction, examples/ch05-power-factor-correction, ac-power, beginner-glossary | ✅ | ✅ | 通過 | 無。80.2、150、93 kVAR；323.2 → 0.812 → 667 A；137.2 → 0.957 → 566 A；約 28%（(566/667)² ≈ 0.72），全部對得上例 5-3；V 曲線最低點在中間，左邊欠激（落後、吸收虛功率）、右邊過激（超前、供給虛功率），符合 v-curve；$Q=P\tan\theta$ 和 $\theta$ 有說明；虛功率在同一頁有解釋 |
+| 17 | four-magnetic-principles, linear-dc-machine, transformer, ac-machines, synchronous-generator, synchronous-motor | ✅ | ✅ | 通過 | 略讀，無退步（「推是發電、拉是馬達」和第 6 頁一致） |
+| 18 | transformer, examples/ch01-air-gap, electrical-frequency-and-speed, synchronous-motor-torque-speed, v-curve | ✅ | ✅ | 通過 | 略讀，無退步 |
+
+### 次要建議（不影響通過）
+1. **第 16 頁步驟 2**：從「功因 0.812」直接跳到「667 A」，沒有寫出算法，畫面上也沒提到 480 V 電源，新手沒辦法自己算出來。建議補一行「線電流 = 450 kW ÷（√3 × 480 V × 功因）」，或至少寫「功因越低 → 同樣功率要更大的電流」。另外，「損失」和「電流」指的都是**輸電線**的損失與線電流（wiki 原文是「輸電損失」「線電流」），頁面上沒有點明。建議把標題或提醒框改成「輸電線損失」。
+2. **第 16 頁**：「kVAR」這個單位沒有解釋。詞彙表寫的是 var，可以補一句「kVAR：虛功率的單位，千 var」。
+3. **第 14 頁**：「端電壓」沒有定義（建議寫成「輸出端的電壓」）。例 4-3 的前提「場電流調好後就不再調（$E_A$ 固定 277 V）」也沒寫出來，補上之後，提醒框的「所以要隨負載調場電流」會更順。
+4. **第 3 頁**：法拉第定律公式 $e=-N\,d\phi/dt$ 裡的 $N$（匝數）沒有在本頁說明，要到第 4 頁才出現「匝數」。可以在公式後面加「N：匝數」。
+5. **第 4 頁**：圖上的「氣隙」這一頁只有標籤，沒有文字說明，要到第 5 頁才解釋。可以改成「氣隙（一小段空氣）」。另外，標題寫「鐵心」、內文寫「鋼」，可以加一句「電機的鐵心用的是鋼材」，避免新手以為是兩回事。
+6. **第 13 頁**：動畫中隨場電流變粗、變亮的圓環沒有圖例，可以加一句「圓環亮度＝磁場強弱」。$\omega$ 寫成「轉速」，wiki 寫的是角速度（rad/s），簡化可以接受，也可以寫成「轉速（角速度）」。
+7. **第 6 頁**：標題和第 11 頁用「馬達」，讀數和第 1 頁用「電動機」，兩種說法混用，可以在第一次出現時註明「馬達＝電動機」。
+8. **第 15 頁**（舊頁，不是這輪新改的）：「轉矩角 δ」出現在「轉矩（扭力）」的解釋之前兩行，可以把「（扭力）」移到第一次出現的地方。
+
+### 本輪統計
+- 檢查頁數：18 頁（細查 9 頁：3、4、6、8、9、11、13、14、16；略讀 9 頁：1、2、5、7、10、12、15、17、18）
+- 通過：18 頁；需要重生：0 頁
+- 事實可追溯 ❌：0；新手看得懂 ❌：0
+- 次要建議：8 條（不影響通過）
+- 這輪重生的 5 頁（4、8、13、14、16）和小修的 4 頁（3、6、9、11）全部通過；略讀的 9 頁沒有發現退步。
+
+## v5 結論
+
+- 改版後兩輪檢查：5 頁重生 → 0 頁重生，18 頁全部通過
+- 第 5 輪後只採納 3 項用字微調（第 3 頁補「N：匝數」、第 4 頁「氣隙（一小段空氣）」、第 16 頁點明是「輸電線」損失），內容直接引自 wiki，未再送檢

@@ -34,6 +34,7 @@
 ```
 /
 ├── AGENTS.md              ← 本文件（規則）
+├── index.html             ← 教學簡報本體（GitHub Pages 首頁）
 ├── README.md              ← 專案介紹、作業繳交項目與連結
 ├── .gitignore             ← 必須包含 raw/
 ├── .nojekyll              ← 讓 GitHub Pages 直接發布靜態檔
@@ -53,7 +54,7 @@
 │   └── lint.py            ← 機械性 lint 腳本（python tools/lint.py）
 └── slides/
     ├── outline.md         ← 簡報大綱（每頁標註依據的 wiki 頁）
-    ├── index.html         ← 教學簡報本體
+    ├── index.html         ← 轉址到首頁（舊網址相容）
     └── check.md           ← 簡報逐頁檢查紀錄
 ```
 
@@ -290,7 +291,7 @@ updated: 2026-11-23
    - **本頁首次出現的術語**（必填）：每個術語都要在這一頁或更早的頁面用一句白話解釋；解釋必須能在 wiki 找到（例如 `beginner-glossary`），wiki 沒有就**先補 wiki**，再寫大綱
 3. 交給使用者確認，記錄 `outline` 到 `log.md`。
 
-**步驟 B：生成 HTML（`slides/index.html`）**
+**步驟 B：生成 HTML（根目錄 `index.html`）**
 
 只根據**已確認的大綱**生成，不可加入大綱沒有的事實。規格見第 6 節。
 
@@ -336,11 +337,13 @@ updated: 2026-11-23
 
 ### 6.2 技術規格
 
-- **單一 HTML 檔**，CSS 與 JS 寫在同一檔內；只允許用 CDN 載入 KaTeX。
-- 鍵盤 ← → 換頁，畫面顯示「目前頁／總頁數」，手機可用滑動或按鈕換頁。
-- 每頁右下角標註依據：`📖 wiki/concepts/xxx.md`，並連到 GitHub 上對應的頁面（`https://github.com/<帳號>/<repo>/blob/main/wiki/concepts/xxx.md`）。
+- **單一 HTML 檔**，放在 repo 根目錄 `index.html`，讓 GitHub Pages 首頁直接顯示簡報；網頁標題為「電機機械教學簡報」。CSS 與 JS 寫在同一檔內；只允許用 CDN 載入 KaTeX。
+- 鍵盤 ← → 換頁，畫面顯示「目前頁／總頁數」，手機可用滑動或按鈕換頁；**換頁要有轉場動畫**。
+- **畫面上不顯示出處**：每頁 `<section>` 以隱藏的 `data-src` 屬性記錄依據的 wiki 頁（供檢查者追溯），完整對照寫在 `slides/outline.md`。
+- **多用動畫幫助理解**：會動的概念（旋轉磁場、旋轉線圈、轉矩角等）用 SVG＋JS 動畫或可操作的按鈕、滑桿呈現；動畫表現的關係也必須能在 wiki 找到依據；需尊重 `prefers-reduced-motion`。
+- **每頁只講重點**：內文以短句與條列為主，避免長段落。
 - 圖片一律用 SVG 自行繪製，不使用講義截圖。
-- 使用繁體中文；配色清楚、字級大（內文至少 24px），投影時看得清楚。
+- 使用繁體中文；配色清楚、字級大（內文至少 20px），投影時看得清楚。
 
 ---
 
